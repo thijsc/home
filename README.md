@@ -33,6 +33,7 @@ and each print is a commit.
 
 | Part | |
 | --- | --- |
+| [`bekant-net-hook`](parts/bekant-net-hook/) | A hook that gives the IKEA Bekant's cable net slack |
 
 ## Setup
 
