@@ -30,15 +30,18 @@ SLIDE = 0.2  # a side, round the shaft and round the ring: they slide in
 FLOOR = 1.55  # the hook under the holder's ring, the user's measurement of the room there
 THICK = 4  # the hook everywhere else
 RIM = 4  # the wall round the ring
-REACH = 50  # from the middle of the shaft to where the loop's cord rests
+REACH = 40  # from the middle of the shaft to where the loop's cord rests
 WIDTH = 12  # the arm and the hook, across
 SPACE = 4  # the room inside the hook, across, for the net's loop
-HOOK_WALL = 3  # the hook's wall, round that room
+HOOK_WALL = 3  # the hook's wall over that room
+BACK_WALL = 2 * HOOK_WALL  # the hook's wall behind that room, at the arm's end
 LIP = 6  # the hook's top, past the half circle toward the shaft, which keeps the loop under it
 
 POCKET = RING / 2 + SLIDE  # the radius of the pocket the ring sits in
-HOOK_X = REACH - SPACE / 2  # the middle of the hook's round back, along the arm
-END = REACH + HOOK_WALL  # the arm's end, which is the hook's back
+END = REACH + BACK_WALL  # the arm's end, which is the hook's back
+ROUND = SPACE / 2 + HOOK_WALL  # the radius the hook's back rounds over with, at the top
+ROUND_X = END - ROUND  # the middle of that round, along the arm
+LIP_X = REACH - SPACE / 2 - LIP  # where the lip starts, along the arm
 HOOK_Z = THICK + SPACE / 2  # and up: the room inside the hook starts on the arm's top
 VIEWS = (*plate.ANGLE, ("side.png", 0, -90, "From the side: the hook opens toward the shaft"))
 
@@ -48,16 +51,15 @@ def hook():
     arm = Box(END, WIDTH, THICK, align=FROM_X)
     pocket = Pos(0, 0, FLOOR) * Cylinder(POCKET, THICK, align=MIN)
     hole = Pos(0, 0, -CUT) * Cylinder(SHAFT / 2 + SLIDE, THICK + 2 * CUT, align=MIN)
-    # The hook is the far half of a cylinder that stands on the arm, its axis across, with a lip toward the shaft.
-    # Below the cylinder's middle its back is straight, in line with the arm's end.
+    # The hook stands on the arm: a block over the room, and a back that is straight below the room's middle and
+    # rounds over above it, as the far half of a cylinder with its axis across.
     # The room inside is a slot with a flat back, open toward the shaft.
-    outer = SPACE / 2 + HOOK_WALL
-    half = Pos(0, 0, -WIDTH / 2) * Box(outer, 2 * outer, WIDTH, align=(Align.MIN, Align.CENTER, Align.MIN))
-    curl = Pos(HOOK_X, 0, HOOK_Z) * Rot(90, 0, 0) * (Cylinder(outer, WIDTH) & half)
-    back = Pos(HOOK_X, 0, THICK) * Box(outer, WIDTH, HOOK_Z - THICK, align=FROM_X)
-    lip = Pos(HOOK_X - LIP, 0, HOOK_Z + SPACE / 2) * Box(LIP, WIDTH, HOOK_WALL, align=FROM_X)
-    room = Pos(HOOK_X - LIP - CUT, 0, THICK) * Box(REACH - HOOK_X + LIP + CUT, WIDTH + 2 * CUT, SPACE, align=FROM_X)
-    return eye + arm + (curl + back + lip - room) - pocket - hole
+    half = Pos(0, 0, -WIDTH / 2) * Box(ROUND, 2 * ROUND, WIDTH, align=(Align.MIN, Align.CENTER, Align.MIN))
+    curl = Pos(ROUND_X, 0, HOOK_Z) * Rot(90, 0, 0) * (Cylinder(ROUND, WIDTH) & half)
+    back = Pos(ROUND_X, 0, THICK) * Box(ROUND, WIDTH, HOOK_Z - THICK, align=FROM_X)
+    top = Pos(LIP_X, 0, THICK) * Box(ROUND_X - LIP_X, WIDTH, SPACE + HOOK_WALL, align=FROM_X)
+    room = Pos(LIP_X - CUT, 0, THICK) * Box(REACH - LIP_X + CUT, WIDTH + 2 * CUT, SPACE, align=FROM_X)
+    return eye + arm + (curl + back + top - room) - pocket - hole
 
 
 def main():
