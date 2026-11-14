@@ -1,0 +1,127 @@
+#!/usr/bin/env bash
+# Build a part from its model, and check it.
+#
+# Every part is a directory under parts/ (README.md, Parts). It holds its
+# model, part.py, a build123d script, a README.md and its pictures.
+#
+# A build reads the fits of the printer and material it is for from
+# printers.toml, builds the printed parts and writes to
+# build/<part>/<printer>-<material>/:
+#
+#   plate.3mf     every printed part on the printer's plate, each turned
+#                 the way it prints, a Bambu Studio project with what each
+#                 part changes from the presets, such as supports
+#   *.stl         each printed part on its own, turned the same way
+#   <part>.step   the whole thing put together, with the bought parts as
+#                 blocks, for a CAD viewer
+#
+# It fails if a printed part is not one valid solid, if any two solids
+# overlap, two printed parts or a printed part and a bought one, or if the
+# printed parts do not fit the plate.
+#
+#   bin/part                      the parts
+#   bin/part hook                 build and check parts/hook
+#   bin/part hook --pictures      also draw its pictures into parts/hook/pictures/,
+#                                 which are committed
+#   bin/part hook --open          then open plate.3mf in Bambu Studio; BAMBU
+#                                 names another app. Yours to run: the
+#                                 Claude Code sandbox does not open apps
+#   bin/part --all                build and check every part
+#   bin/part --new hook           start parts/hook from lib/template
+#   bin/part hook --printer p2s --material petg
+#                                 build for a printer and material in
+#                                 printers.toml; without them, its defaults,
+#                                 which the committed pictures are drawn for
+#   bin/part --calibration        build the calibration piece into
+#                                 build/calibration/<printer>-<material>/
+#                                 and print what each of its columns is; with
+#                                 --printer and --material as for a part, and
+#                                 --open (README.md, Calibration)
+#   bin/part --test               run the tests of what the parts share,
+#                                 lib/test_*.py
+#
+# uv runs it in .venv, on the versions uv.lock pins; the environment is
+# made once per machine (README.md, Setup).
+set -euo pipefail
+# --help prints the comment above.
+case "${1:-}" in -h|--help) sed -n '2,/^[^#]/{/^#/s/^# \{0,1\}//p;}' "$0"; exit 0;; esac
+cd "$(dirname "$0")/.."
+
+parts() { for d in parts/*/; do [[ -f "$d/part.py" ]] && basename "$d"; done; return 0; }
+# A part's first line of documentation, without its name.
+summary() { sed -n '1{s/^"""//;s/^[^:]*: *//;p;}' "parts/$1/part.py"; }
+
+name="" preview=() new="" open_plate="" printer=() calibration="" run_tests="" all=""
+while (( $# )); do
+  case "$1" in
+    --pictures) preview=(--pictures);;
+    --open) open_plate=1;;
+    --calibration) calibration=1;;
+    --test) run_tests=1;;
+    --all) all=1;;
+    --printer|--material)
+      [[ -n "${2:-}" ]] || { echo "bin/part: $1 takes a name from printers.toml" >&2; exit 2; }
+      printer+=("$1" "$2")
+      shift;;
+    --new)
+      new="${2:-}"
+      [[ "$new" =~ ^[a-z0-9][a-z0-9-]*$ ]] || { echo "bin/part: --new takes a name for the part, such as hook or cable-clip" >&2; exit 2; }
+      shift;;
+    -*) echo "bin/part: unknown argument $1 (see --help)" >&2; exit 2;;
+    *) name="$1";;
+  esac
+  shift
+done
+
+if [[ -n "$new" ]]; then
+  [[ -e "parts/$new" ]] && { echo "bin/part: parts/$new already exists" >&2; exit 1; }
+  mkdir -p "parts/$new"
+  for f in part.py README.md; do sed "s/NAME/$new/g" "lib/template/$f" >"parts/$new/$f"; done
+  echo "bin/part: parts/$new is a copy of lib/template"
+  echo "Describe it in parts/$new/part.py and its README.md, and list it in README.md."
+  exit 0
+fi
+
+# matplotlib and ezdxf, which build123d brings, keep caches of their own;
+# here they go under build/, beside the rest of what a run makes.
+export MPLCONFIGDIR="$PWD/build/.cache/matplotlib"
+export XDG_CACHE_HOME="$PWD/build/.cache"
+# The parts share what is in lib/.
+export PYTHONPATH="$PWD/lib"
+python=(uv run --locked --no-python-downloads python)
+
+if [[ -n "$run_tests" ]]; then
+  exec "${python[@]}" -m unittest discover --start-directory lib --pattern 'test_*.py'
+fi
+
+# The printer and material the build is for, as printers.py reads them, for --open's path.
+build_for() {
+  "${python[@]}" -c 'from printers import printing; p = printing(); print(f"{p.name}-{p.material}")' \
+    ${printer[@]+"${printer[@]}"}
+}
+
+if [[ -n "$calibration" ]]; then
+  "${python[@]}" lib/calibration.py ${printer[@]+"${printer[@]}"}
+  [[ -z "$open_plate" ]] || open -a "${BAMBU:-BambuStudio}" "build/calibration/$(build_for)/calibration.3mf"
+  exit 0
+fi
+
+build() {
+  echo "part $1"
+  "${python[@]}" "parts/$1/part.py" ${preview[@]+"${preview[@]}"} ${printer[@]+"${printer[@]}"}
+}
+
+if [[ -n "$all" ]]; then
+  for p in $(parts); do build "$p"; done
+  exit 0
+fi
+
+if [[ -z "$name" ]]; then
+  for p in $(parts); do printf '%-20s %s\n' "$p" "$(summary "$p")"; done
+  [[ -n "$(parts)" ]] || echo "no parts yet; bin/part --new <name> starts one"
+  exit 0
+fi
+
+[[ -f "parts/$name/part.py" ]] || { echo "bin/part: no part $name (bin/part lists them)" >&2; exit 1; }
+build "$name"
+[[ -z "$open_plate" ]] || open -a "${BAMBU:-BambuStudio}" "build/$name/$(build_for)/plate.3mf"

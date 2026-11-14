@@ -1,0 +1,12 @@
+[project]
+name = "home-parts"
+version = "0.1.0"
+description = "Printed parts for the house, in build123d"
+requires-python = "==3.12.16"
+dependencies = [
+    "build123d==0.13.0",
+    "matplotlib==3.11.2",
+]
+
+[tool.uv]
+package = false

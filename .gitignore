@@ -1,0 +1,12 @@
+# The Python environment, which uv makes from uv.lock, and what bin/part
+# writes to build/: the printable files and the caches of the libraries it
+# runs. A part's pictures are committed (README.md).
+.venv/
+build/
+__pycache__/
+
+# Claude Code (machine-local permissions)
+.claude/settings.local.json
+
+# macOS
+.DS_Store

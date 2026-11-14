@@ -1,0 +1,26 @@
+# The Bambu Lab printers the parts are printed on, and for each material printed on one, the fits its
+# calibration piece showed (README.md, Calibration). `bin/part <name> --printer <name> --material <name>`
+# builds for one; without them, the build is for the defaults, which the committed pictures use.
+default_printer = "p2s"
+default_material = "pla"
+
+[printers.p2s]
+model = "Bambu Lab P2S"
+plate = 256  # mm, the build plate's side
+nozzle = 0.4  # mm
+
+# One table per material. Each fit is the code engraved under the first feature in its row of the
+# calibration piece that fits, such as N2. calibrated is false until the piece has been printed in
+# the material on this printer and read: the codes are then first guesses, not what it makes. The
+# calibration piece needs only the table, with calibrated = false; a part needs the codes too. The
+# parts and the piece print with the Bambu Studio presets the comment names, so the fits read off
+# the piece hold for the parts.
+[printers.p2s.materials.pla]
+calibrated = true
+# 0.20mm Standard @BBL P2S on the textured PEI plate, as Bambu Studio has it, with the filament
+# profile the printer finds for the spool. The codes are the ones read off bliep's calibration
+# piece on this printer (../bliep, enclosure/printers.toml); its S, N and P rows are the same
+# features as this piece's.
+screw_hole = "S2"  # an M3 slides through its hole
+nut_pocket = "N2"  # an M3 nut presses into its pocket and does not turn
+printed_grip = "P2"  # a printed part pushes into another and holds
