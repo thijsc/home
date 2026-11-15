@@ -1,9 +1,10 @@
 """drawer-glass-clip: a sleeve that connects a plate of glass to the front of a drawer.
 
 The glass comes in from the top, into a slot. The bottom has an opening between two thin walls, up to the glass,
-which a part of the drawer comes up into. A rib runs along either side of the opening, near its bottom edge, with
-room behind it for that part to grip onto, and a patch of ridges on its underside. One end is flat. The other end's face
-curves across the clip: it is full length at the side the slot is nearest to, and sweeps back to the other side.
+which runs out through the curved end: the drawer's holders slide in there. A rib runs along either side of the
+opening, near its bottom edge, with room behind it for a holder to grip onto, and a patch of ridges on its underside.
+One end is flat. The other end's face curves across the clip: it is full length at the side the slot is nearest to,
+and sweeps back to the other side.
 
 Every size is a named constant below. Coordinates: x across, toward the side the slot is nearest to, y along from the
 flat end, z up from the bottom.
@@ -37,13 +38,13 @@ GLASS_SHOWN = 45  # how much of the glass the pictures show, up from the slot's 
 GLASS_STOP = 7  # from the bottom to the glass, the user's measurement on the original
 SLOT_WALL = 2  # from the clip's long side to the slot, the user's measurement on the original
 SLOT_FROM = 4  # from the flat end to the slot: read off the photo
-SLIDE = 0.2  # a side and an end, round the glass: the glass slides in
+SLIDE = 0.2  # a side, round the glass, across: the glass slides in
+END = 0.3  # at each end of the glass, along: the glass slides in, with leeway
 RIB_IN = 1  # a rib's underside, up from the bottom, the user's measurement on the original
 RIB = 1.75  # a rib, from its underside to its back, the user's measurement on the original
 BEHIND = 4  # the room behind a rib, between its back and the glass, the user's measurement on the original: what grips onto the rib goes there
 OPENING_WALL = 1.2  # the wall on either side of the opening: three lines of the nozzle, the least a wall is; 1 mm on the original
-OPENING_FROM = 14.5  # the opening and the ribs, along, from the flat end: read off the photo
-OPENING_TO = 70  # where the opening and the ribs end, from the flat end, the user's measurement on the original
+OPENING_FROM = 14.5  # the opening and the ribs, along, from the flat end: read off the photo. They run out through the curved end
 RIB_WIDE = 4  # a rib with its wall, in from the clip's side, the user's measurement on the original
 RIDGE = 0.4  # how deep the grooves between the ridges are cut into a rib's underside
 PITCH = 1.2  # from one groove to the next, along
@@ -51,7 +52,7 @@ RIDGES = 11  # the grooves in a rib
 RIDGES_FROM = 31  # the first groove, from the flat end: read off the photo
 
 SLOT = GLASS_THICK + 2 * SLIDE  # the slot, across
-SLOT_LENGTH = GLASS_EDGE + 2 * SLIDE  # the slot, along
+SLOT_LENGTH = GLASS_EDGE + 2 * END  # the slot, along
 SLOT_X = WIDTH / 2 - SLOT_WALL - SLOT / 2  # the middle of the slot and of the glass, across
 FAR_WALL = WIDTH - SLOT_WALL - SLOT  # the wall on the slot's other side
 OPENING = WIDTH - 2 * OPENING_WALL  # the opening, across
@@ -70,9 +71,9 @@ VIEWS = (
 
 def ribs():
     """The two ribs, with the ridges in their undersides: a strip along either side of the opening, near its bottom
-    edge, over its whole length."""
-    both = Pos(0, OPENING_FROM - JOIN, RIB_IN) * Box(OPENING + 2 * JOIN, OPENING_TO - OPENING_FROM + 2 * JOIN, RIB, align=FROM)
-    gap = Pos(0, OPENING_FROM - CUT, RIB_IN - CUT) * Box(RIB_GAP, OPENING_TO - OPENING_FROM + 2 * CUT, RIB + 2 * CUT, align=FROM)
+    edge, over its whole length. They run past the curved end, whose cut ends them."""
+    both = Pos(0, OPENING_FROM - JOIN, RIB_IN) * Box(OPENING + 2 * JOIN, LENGTH - OPENING_FROM + JOIN + CUT, RIB, align=FROM)
+    gap = Pos(0, OPENING_FROM - CUT, RIB_IN - CUT) * Box(RIB_GAP, LENGTH - OPENING_FROM + 2 * CUT, RIB + 2 * CUT, align=FROM)
     # The grooves, from the side: the sketch's x is the part's y, and its y the part's z. What is left between two
     # grooves is a ridge, with its tip at the rib's underside.
     one = Polygon((0, -CUT), (0, 0), (PITCH / 2, RIDGE), (PITCH, 0), (PITCH, -CUT), align=None)
@@ -85,8 +86,9 @@ def ribs():
 
 def clip():
     slot = Pos(SLOT_X, SLOT_FROM, GLASS_STOP) * Box(SLOT, SLOT_LENGTH, DEPTH - GLASS_STOP + CUT, align=FROM)
-    # The opening goes up to the glass. The clip is solid under the glass on either side of it, along.
-    opening = Pos(0, OPENING_FROM, -CUT) * Box(OPENING, OPENING_TO - OPENING_FROM, GLASS_STOP + CUT, align=FROM)
+    # The opening goes up to the glass and out through the curved end. The clip is solid under the glass at the
+    # flat end.
+    opening = Pos(0, OPENING_FROM, -CUT) * Box(OPENING, LENGTH - OPENING_FROM + CUT, GLASS_STOP + CUT, align=FROM)
     # The curved end: everything inside an upright cylinder past the end is cut away.
     hollow = Pos(-WIDTH / 2, LENGTH - SWEEP + ARC, -CUT) * Cylinder(ARC, DEPTH + 2 * CUT, align=MIN)
     return Box(WIDTH, LENGTH, DEPTH, align=FROM) - slot - opening + ribs() - hollow
@@ -94,13 +96,13 @@ def clip():
 
 def glass():
     """The glass, as a block: the edge that stands in the slot, and the start of the pane above it."""
-    return Pos(SLOT_X, SLOT_FROM + SLIDE, GLASS_STOP) * Box(GLASS_THICK, GLASS_EDGE, GLASS_SHOWN, align=FROM)
+    return Pos(SLOT_X, SLOT_FROM + END, GLASS_STOP) * Box(GLASS_THICK, GLASS_EDGE, GLASS_SHOWN, align=FROM)
 
 
 def main():
     # The clip prints standing on its flat end, so every layer is a ring or a U round the glass, and the glass cannot
-    # split the walls off. The slot's and the opening's far ends bridge from wall to wall. A brim keeps the tall
-    # piece on the plate.
+    # split the walls off. The slot's far end bridges from wall to wall. A brim keeps the tall piece on the
+    # plate.
     plate.run(
         HERE,
         printed={"clip": clip()},
