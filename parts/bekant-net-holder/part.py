@@ -26,34 +26,41 @@ FITS = chosen().fits
 CUT = 1  # a cut runs this far past what it cuts through, so it leaves no skin
 MIN = (Align.CENTER, Align.CENTER, Align.MIN)
 
-# The plug. Its sizes are the ones of a print that fits the desk's hole.
-FLANGE = 18  # the flange across, where it lies against the desk
-RIM = 16  # the flange across at its rim, the edge away from the desk: its side slopes
-FLANGE_THICK = 2  # the flange, from its rim to the desk
-RECESS = 1  # the recess inside the rim, deep; the pin's head sits in it
-RECESS_FLOOR = 14  # that recess across at its floor: it widens to RIM at the rim
-COLLAR = 9.5  # the round shaft across, next to the flange
-COLLAR_HEIGHT = 3  # that shaft, up from the flange
-NECK = 8.8  # the shaft across between the collar and the first barb
-NECK_HEIGHT = 1  # that neck, up from the collar
-BARB = 10  # a barb across at its wide end, which faces the flange
-BARB_ROOT = 7.6  # a barb across at its narrow end
-BARB_PITCH = 1.2  # a barb, up
-BARBS = 6
-TIP = 7  # the prongs across at their end
-TIP_HEIGHT = 1.5  # the last barb, which narrows to TIP
-HOLE = 4  # the hole through the plug, which the pin goes into
-SLOT = 1  # each of the two slots that split the shaft into four prongs, wide
-
-# The pin.
+# The pin. Its sizes are measured on the model of a pin that fits, Ikea Bekant Cable Holder Pin.stl.
 HEAD = 12  # the pin's head across
 HEAD_THICK = 2.3  # the head, from its outer face to the face that lies in the recess
 HEAD_EDGE = 0.3  # the head's side is straight this far up from its outer face, then slopes in
 HEAD_FLAT = 8.76  # the head's face in the recess, across its flat
 HEAD_ROUND = 1  # the radius the head's side rounds over with to that face
-PIN = HOLE - 2 * FITS.printed_grip  # the pin's shaft across: it pushes into the hole and holds
+PIN = 4.75  # the pin's shaft across
+PIN_ROOT = 0.75  # the radius the shaft rounds out with into the head
 PIN_LENGTH = 14.9  # the shaft, from the head to its end
-PIN_TIP = 0.5  # the shaft narrows this much at its end, over as much length, so it finds the hole
+PIN_STRAIGHT = 11.3  # the shaft is PIN across this far from the head, then widens
+PIN_END = 4.98  # the shaft across at its widest, next to its end
+PIN_TIP = 0.5  # the radius the shaft's end rounds over with, so it finds the hole
+
+# The plug.
+DESK_HOLE = 9  # the hole under the desk across, the user's measurement on the Bekant
+SLIDE = 0.2  # the room around the collar in that hole, on each side: it slides in
+FLANGE = 18  # the flange across, where it lies against the desk
+RIM = 16  # the flange across at its rim, the edge away from the desk: its side slopes
+FLANGE_THICK = 2  # the flange, from its rim to the desk
+RECESS = 1  # the recess inside the rim, deep; the pin's head sits in it
+RECESS_FLOOR = 14  # that recess across at its floor: it widens to RIM at the rim
+COLLAR = DESK_HOLE - 2 * SLIDE  # the round shaft across, next to the flange
+COLLAR_HEIGHT = 3  # that shaft, up from the flange
+NECK = 8  # the shaft across between the collar and the first barb
+NECK_HEIGHT = 1  # that neck, up from the collar
+BARB = 10  # a barb across at its wide end, which faces the flange: wider than the desk's hole, so it catches
+BARB_ROOT = 7.6  # a barb across at its narrow end
+BARB_PITCH = 1.2  # a barb, up
+BARBS = 6
+TIP = 7.6  # the prongs across at their end
+TIP_HEIGHT = 1.5  # the last barb, which narrows to TIP
+HOLE = PIN + 2 * FITS.printed_grip  # the hole through the plug: the pin pushes into it and holds
+HOLE_END = PIN_END + 2 * FITS.printed_grip  # the hole across where the pin is widest
+HOLE_EDGE = PIN_ROOT + SLIDE  # the hole's edge in the recess is cut away this far, so it clears the pin's root
+SLOT = 1  # each of the two slots that split the shaft into four prongs, wide
 
 RECESS_SLOPE = (RIM - RECESS_FLOOR) / 2 / RECESS  # how much the recess widens for every mm toward the rim
 COLLAR_Z = FLANGE_THICK  # where the collar starts
@@ -61,6 +68,8 @@ NECK_Z = COLLAR_Z + COLLAR_HEIGHT  # where the neck starts, and the slots
 BARB_Z = NECK_Z + NECK_HEIGHT  # where the first barb starts
 TIP_Z = BARB_Z + BARBS * BARB_PITCH  # where the last barb starts
 TOP = TIP_Z + TIP_HEIGHT  # the prongs' end
+WIDENING = PIN_LENGTH - PIN_STRAIGHT - PIN_TIP  # the length the pin's shaft widens over, and the hole with it
+WIDE_Z = RECESS + PIN_STRAIGHT  # where the pin's shaft starts to widen
 HEAD_Z = RECESS - HEAD_THICK  # the head's outer face, which is below the rim
 VIEWS = (
     *plate.ANGLE,
@@ -85,7 +94,12 @@ def plug():
     for i in range(BARBS):
         shaft += Pos(0, 0, BARB_Z + i * BARB_PITCH) * Cone(BARB / 2, BARB_ROOT / 2, BARB_PITCH, align=MIN)
     shaft += Pos(0, 0, TIP_Z) * Cone(BARB / 2, TIP / 2, TIP_HEIGHT, align=MIN)
-    hole = Pos(0, 0, -CUT) * Cylinder(HOLE / 2, TOP + 2 * CUT, align=MIN)
+    # The hole follows the pin: straight, then wider. The prongs bend apart to let the pin's wide end through the
+    # straight length. The wide lengths run past the prongs' end when the pin does.
+    hole = Pos(0, 0, -CUT) * Cylinder(HOLE / 2, WIDE_Z + CUT, align=MIN)
+    hole += Pos(0, 0, WIDE_Z) * Cone(HOLE / 2, HOLE_END / 2, WIDENING, align=MIN)
+    hole += Pos(0, 0, WIDE_Z + WIDENING) * Cylinder(HOLE_END / 2, TOP + CUT, align=MIN)
+    hole += Pos(0, 0, RECESS) * Cone(HOLE / 2 + HOLE_EDGE, HOLE / 2, HOLE_EDGE, align=MIN)
     return flange + shaft - recess - hole - slot() - Rot(0, 0, 90) * slot()
 
 
@@ -98,12 +112,27 @@ def head_profile():
     return make_hull((edge + middle + corner).edges())
 
 
+def root_profile():
+    """Half the round between the shaft and the head from the side, the head's flat face at the sketch's y = 0."""
+    corner = Pos(PIN / 2, 0) * Rectangle(PIN_ROOT, PIN_ROOT, align=Align.MIN)
+    return corner - Pos(PIN / 2 + PIN_ROOT, PIN_ROOT) * Circle(PIN_ROOT)
+
+
+def tip_profile():
+    """Half the shaft's round end from the side, its widest at the sketch's y = 0."""
+    flat = PIN_END / 2 - PIN_TIP  # the end's flat face, from the middle
+    quarter = Pos(flat, 0) * Circle(PIN_TIP) & Pos(flat, 0) * Rectangle(PIN_TIP, PIN_TIP, align=Align.MIN)
+    return Rectangle(flat, PIN_TIP, align=Align.MIN) + quarter
+
+
 def pin():
     head = Pos(0, 0, HEAD_Z) * revolve(Plane.XZ * head_profile(), Axis.Z)
-    straight = HEAD_THICK + PIN_LENGTH - PIN_TIP  # the shaft starts at the head's outer face, inside the head
-    shaft = Pos(0, 0, HEAD_Z) * Cylinder(PIN / 2, straight, align=MIN)
-    tip = Pos(0, 0, HEAD_Z + straight) * Cone(PIN / 2, PIN / 2 - PIN_TIP, PIN_TIP, align=MIN)
-    return head + shaft + tip
+    # The shaft starts at the head's outer face, inside the head.
+    shaft = Pos(0, 0, HEAD_Z) * Cylinder(PIN / 2, HEAD_THICK + PIN_STRAIGHT, align=MIN)
+    root = Pos(0, 0, RECESS) * revolve(Plane.XZ * root_profile(), Axis.Z)
+    wide = Pos(0, 0, WIDE_Z) * Cone(PIN / 2, PIN_END / 2, WIDENING, align=MIN)
+    tip = Pos(0, 0, RECESS + PIN_LENGTH - PIN_TIP) * revolve(Plane.XZ * tip_profile(), Axis.Z)
+    return head + shaft + root + wide + tip
 
 
 def main():
