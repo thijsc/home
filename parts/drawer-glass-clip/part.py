@@ -3,8 +3,8 @@
 The glass comes in from the top, into a slot. The bottom has an opening between two thin walls, up to the glass,
 which runs out through the curved end: the drawer's holders slide in there. A rib runs along either side of the
 opening, near its bottom edge, with room behind it for a holder to grip onto, and a patch of ridges on its underside.
-One end is flat. The other end's face curves across the clip: it is full length at the side the slot is nearest to,
-and sweeps back to the other side.
+One end is flat. The other end's face curves across the clip: it is full length at the side the slot is furthest from,
+and sweeps back to the side the slot is nearest to.
 
 Every size is a named constant below. Coordinates: x across, toward the side the slot is nearest to, y along from the
 flat end, z up from the bottom.
@@ -36,7 +36,7 @@ GLASS_THICK = 8  # the glass, across, the user's measurement
 GLASS_EDGE = 89  # the edge of the glass that stands in the slot, along, the user's measurement
 GLASS_SHOWN = 45  # how much of the glass the pictures show, up from the slot's floor: the pane goes on above it
 GLASS_STOP = 7  # from the bottom to the glass, the user's measurement on the original
-SLOT_WALL = 2  # from the clip's long side to the slot, the user's measurement on the original
+SLOT_WALL = 2  # from the clip's short side to the slot, the user's measurement on the original
 SLOT_FROM = 4  # from the flat end to the slot: read off the photo
 SLIDE = 0.2  # a side, round the glass, across: the glass slides in
 END = 0.3  # at each end of the glass, along: the glass slides in, with leeway
@@ -90,7 +90,7 @@ def clip():
     # flat end.
     opening = Pos(0, OPENING_FROM, -CUT) * Box(OPENING, LENGTH - OPENING_FROM + CUT, GLASS_STOP + CUT, align=FROM)
     # The curved end: everything inside an upright cylinder past the end is cut away.
-    hollow = Pos(-WIDTH / 2, LENGTH - SWEEP + ARC, -CUT) * Cylinder(ARC, DEPTH + 2 * CUT, align=MIN)
+    hollow = Pos(WIDTH / 2, LENGTH - SWEEP + ARC, -CUT) * Cylinder(ARC, DEPTH + 2 * CUT, align=MIN)
     return Box(WIDTH, LENGTH, DEPTH, align=FROM) - slot - opening + ribs() - hollow
 
 
