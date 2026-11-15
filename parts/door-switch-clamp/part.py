@@ -2,8 +2,8 @@
 its wires.
 
 The case goes over the switch and is screwed down through a wing on either side. The switch's front stays open, flush
-with the case's front, for the door. Behind the switch the case has a room for the wires, which leave through a notch
-in the back wall.
+with the case's front, for the door. Behind the switch the case covers a room for the wires, which is open at the
+back over its whole width and height.
 
 Every size is a named constant below. Coordinates: x across, y deep from the open front to the back, z up from the
 surface the switch is mounted on.
@@ -34,10 +34,10 @@ SWITCH_WIDTH = 31  # the switch, across, the user's measurement
 SWITCH_DEPTH = 30  # the switch, front to back, its round back included, the user's measurement
 SWITCH_HEIGHT = 8  # the switch, up from the surface, the user's measurement
 SLIDE = 0.2  # a side, round the switch and over it: the case slides over it
-WALL = 5  # the case's side walls, its back wall and its top
-WIRE_ROOM = 15  # the room behind the switch for its wires, front to back
-WIRE_END = 16  # the wire room's flat back end, across, which is also the notch's width
-NOTCH_HEIGHT = 5  # the notch in the back wall that a bunch of loose wires leaves through, up from the surface
+WALL = 5  # the case's side walls and its top
+WIRE_ROOM = 15  # the room behind the switch for its wires, front to back, open at the back
+WIRE_ROOF = 2  # the case's top over the wire room, which is higher than the pocket; it carries no load
+EDGE = 1.2  # the least the top is thick at the wire room's opening, where the top rounds over: three lines of the nozzle
 SLOPE = 45  # degrees from upright, the steepest the inside closes in at, so it prints standing without supports
 TOP_ROUND = 3  # the radius the case's top rounds over to its sides with
 WING_THICK = 5  # a wing, up from the surface
@@ -51,13 +51,17 @@ POCKET_Y = SWITCH_DEPTH - SWITCH_WIDTH / 2  # the middle of the switch's round b
 INSIDE = SWITCH_HEIGHT + SLIDE  # the pocket and the wire room, up from the surface
 HALF = POCKET + WALL  # half the case across, and the radius of its round back
 HEIGHT = INSIDE + WALL  # the case's top
-WIRE_BACK = SWITCH_DEPTH + SLIDE + WIRE_ROOM  # the wire room's back end
-BACK = WIRE_BACK + WALL  # the case's back
+BACK = SWITCH_DEPTH + SLIDE + WIRE_ROOM  # the case's back, where the wire room is open
 ROUND_Y = BACK - HALF  # the middle of the case's round back, front to back
 # The wire room is narrower than the switch, so the pocket's round back stays as a shoulder on either side that the
 # switch's back rests against. It is as wide as it can be with that shoulder no steeper than SLOPE.
 WIRE_HALF = POCKET * math.cos(math.radians(SLOPE))
-WIRE_TAPER = WIRE_BACK - (WIRE_HALF - WIRE_END / 2) * math.tan(math.radians(SLOPE))  # where it starts to narrow to its end
+WIRE_INSIDE = HEIGHT - WIRE_ROOF  # the wire room's ceiling, up from the surface
+RISE_Y = SWITCH_DEPTH + SLIDE  # where the ceiling starts to rise from the pocket's to the wire room's, behind the switch
+RISE = (WIRE_INSIDE - INSIDE) / math.tan(math.radians(SLOPE))  # how far back it rises over, at SLOPE
+# The case's top rounds over at the back, so it thins toward its edge over the wire room. The top ends over the
+# opening where it is EDGE thick, this far from the middle of the case's round back.
+EDGE_AT = HALF - TOP_ROUND + math.sqrt(TOP_ROUND**2 - (WIRE_INSIDE + EDGE - (HEIGHT - TOP_ROUND)) ** 2)
 FILLET = HEIGHT - WING_THICK - TOP_ROUND  # the radius the case's side curves down to a wing with
 WING_DEPTH = HEAD + 2 * WING_RIM  # a wing, front to back
 SCREW_X = HALF + FILLET + WING_DEPTH / 2  # a screw, from the middle of the case
@@ -68,8 +72,9 @@ SEAT = HEAD / 2 + FITS.screw_hole  # the radius of the cone seat at the wing's t
 SEAT_DEPTH = (SEAT - SHAFT) / math.tan(math.radians(HEAD_ANGLE / 2))  # the cone seat, down from the wing's top
 VIEWS = (
     *plate.ANGLE,
-    ("under.png", -35, -60, "From below: the switch in its pocket, the wire room and the notch behind it"),
+    ("under.png", -35, -60, "From below: the switch in its pocket, and the wire room behind it, open at the back"),
     ("front.png", 0, -90, "From the front: the case curves down to the wings"),
+    ("back.png", 20, 110, "From behind: the wire room's opening"),
 )
 
 
@@ -110,17 +115,25 @@ def wing():
 
 
 def inside():
-    """What the case is hollow for: the pocket the switch sits in, the wire room behind it and the notch."""
+    """What the case is hollow for: the pocket the switch sits in, and the wire room behind it, which runs out
+    through the case's back and is higher than the pocket."""
     pocket = Pos(0, -CUT) * Rectangle(2 * POCKET, POCKET_Y + CUT, align=(Align.CENTER, Align.MIN)) + Pos(0, POCKET_Y) * Circle(POCKET)
-    # The wire room narrows to its flat end at SLOPE, so it prints standing without supports.
-    room = Polygon(
-        (-WIRE_HALF, POCKET_Y), (WIRE_HALF, POCKET_Y), (WIRE_HALF, WIRE_TAPER),
-        (WIRE_END / 2, WIRE_BACK), (-WIRE_END / 2, WIRE_BACK), (-WIRE_HALF, WIRE_TAPER),
+    room = Pos(0, POCKET_Y) * Rectangle(2 * WIRE_HALF, BACK + CUT - POCKET_Y, align=(Align.CENTER, Align.MIN))
+    hollow = Pos(0, 0, -CUT) * extrude(pocket + room, INSIDE + CUT)
+    # The ceiling rises behind the switch at SLOPE, so it prints standing without supports. From the side: the
+    # sketch's x is the part's y, and its y the part's z.
+    side = Polygon(
+        (RISE_Y, INSIDE - CUT), (RISE_Y, INSIDE), (RISE_Y + RISE, WIRE_INSIDE),
+        (BACK + CUT, WIRE_INSIDE), (BACK + CUT, INSIDE - CUT),
         align=None,
     )
-    hollow = Pos(0, 0, -CUT) * extrude(pocket + room, INSIDE + CUT)
-    notch = Pos(0, WIRE_BACK - CUT, -CUT) * Box(WIRE_END, WALL + 2 * CUT, NOTCH_HEIGHT + CUT, align=(Align.CENTER, Align.MIN, Align.MIN))
-    return hollow + notch
+    high = extrude(Plane.YZ * side, WIRE_HALF, both=True)
+    # The top's thin edge over the opening: everything past EDGE_AT, as wide as the wire room.
+    past = Pos(0, ROUND_Y, -CUT) * (
+        Box(2 * WIRE_HALF, HALF + CUT, HEIGHT + 2 * CUT, align=(Align.CENTER, Align.MIN, Align.MIN))
+        - Cylinder(EDGE_AT, HEIGHT + 2 * CUT, align=MIN)
+    )
+    return hollow + high + past
 
 
 def clamp():
