@@ -34,6 +34,7 @@ and each print is a commit.
 | Part | |
 | --- | --- |
 | [`bekant-net-hook`](parts/bekant-net-hook/) | A hook that gives the IKEA Bekant's cable net slack |
+| [`bekant-net-holder`](parts/bekant-net-holder/) | A holder for the IKEA Bekant's cable net: a plug with barbs and the pin that locks it |
 | [`drawer-glass-clip`](parts/drawer-glass-clip/) | A channel that connects a plate of glass to the front of a drawer |
 | [`door-switch-clamp`](parts/door-switch-clamp/) | A clamp that holds the door switch for the light and covers its wires |
 
