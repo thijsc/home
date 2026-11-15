@@ -14,6 +14,8 @@ is kept current in the same change as the thing it describes, and so is `bin/par
   `--calibration` builds the calibration piece; `--test` runs the tests of what is in `lib/`.
 - `bin/part <name> --open` opens the plate in Bambu Studio. It is the user's to run: the sandbox
   does not open apps. Slicing and sending to the printer happen there, by the user.
+- `bin/part <name> --desktop` copies each printed piece's STL to the desktop. It is the user's to
+  run too: the sandbox does not write there. `DESKTOP` names another directory.
 - `uv sync --locked` makes the environment once per machine and needs the network, so it is the
   user's to run too. `bin/part` needs no network after it.
 

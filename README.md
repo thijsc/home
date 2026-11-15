@@ -56,6 +56,7 @@ bin/part --new hook        # start parts/hook from lib/template
 bin/part hook              # parts/hook: the printable files, and the check
 bin/part hook --pictures   # and its pictures, which are committed
 bin/part hook --open       # then open the plate in Bambu Studio
+bin/part hook --desktop    # then copy each printed piece's STL to the desktop
 bin/part --all             # build and check every part
 bin/part hook --printer p2s --material petg   # for a printer and material in printers.toml
 bin/part --calibration     # the calibration piece

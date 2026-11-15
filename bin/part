@@ -26,6 +26,9 @@
 #   bin/part hook --open          then open plate.3mf in Bambu Studio; BAMBU
 #                                 names another app. Yours to run: the
 #                                 Claude Code sandbox does not open apps
+#   bin/part hook --desktop       then copy each printed part's STL to the
+#                                 desktop, as <part>-<printed part>.stl;
+#                                 DESKTOP names another directory
 #   bin/part --all                build and check every part
 #   bin/part --new hook           start parts/hook from lib/template
 #   bin/part hook --printer p2s --material petg
@@ -51,11 +54,12 @@ parts() { for d in parts/*/; do [[ -f "$d/part.py" ]] && basename "$d"; done; re
 # A part's first line of documentation, without its name.
 summary() { sed -n '1{s/^"""//;s/^[^:]*: *//;p;}' "parts/$1/part.py"; }
 
-name="" preview=() new="" open_plate="" printer=() calibration="" run_tests="" all=""
+name="" preview=() new="" open_plate="" desktop="" printer=() calibration="" run_tests="" all=""
 while (( $# )); do
   case "$1" in
     --pictures) preview=(--pictures);;
     --open) open_plate=1;;
+    --desktop) desktop=1;;
     --calibration) calibration=1;;
     --test) run_tests=1;;
     --all) all=1;;
@@ -124,4 +128,11 @@ fi
 
 [[ -f "parts/$name/part.py" ]] || { echo "bin/part: no part $name (bin/part lists them)" >&2; exit 1; }
 build "$name"
+if [[ -n "$desktop" ]]; then
+  for stl in "build/$name/$(build_for)"/*.stl; do
+    to="${DESKTOP:-$HOME/Desktop}/$name-$(basename "$stl")"
+    cp "$stl" "$to"
+    echo "copied to $to"
+  done
+fi
 [[ -z "$open_plate" ]] || open -a "${BAMBU:-BambuStudio}" "build/$name/$(build_for)/plate.3mf"
