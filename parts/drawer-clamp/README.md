@@ -6,8 +6,8 @@ stands upright through both, with its head sunk in the upper one and its locknut
 one, both level with the outside. An arm turns on the bolt, with its knuckle between the base's two.
 The arm is an angle, as high as the base: one leg lies along the side, over the base, and the
 other goes round the corner and across the drawer's front. At its front end the base has two more
-knuckles, with the arm's leg between them, and a printed pin drops through the three and locks
-the arm shut. With the pin lifted out the arm swings out sideways, and the drawer is free.
+knuckles, with the arm's leg between them, and a printed pin goes up through the three, from below, and locks
+the arm shut. With the pin pulled out the arm swings out sideways, and the drawer is free.
 
 ![drawer-clamp](pictures/angle.png)
 
@@ -36,7 +36,7 @@ the arm shut. With the pin lifted out the arm swings out sideways, and the drawe
 The cupboard's side is 50 mm thick, and the drawer's front is flush with its front edge.
 
 An overhang above the base stands 10 mm out from the side. The pin and its head stand 12 mm or
-more from the side, so the pin drops in past the overhang.
+more from the side. The pin goes in from below, where there is more room.
 
 The base and the arm are both 35 mm high, the bolt's length with its head.
 
@@ -77,9 +77,11 @@ to 1.5 mm behind the front knuckles, and what is left runs between them, 20.4 mm
 0.3 mm above and below. Through the arm's whole swing it stays clear of the front knuckles. The
 screw at the front lies between the two knuckles and is reached between them.
 
-The pin is 6 mm across and 35 mm long, with a point 2 mm long at its lower end. Its hole in the
+The pin is 6 mm across and 35 mm long, with a point 2 mm long at its upper end. Its hole in the
 knuckles and the leg is the pin with 0.25 mm on either side: it slides. Its head is 14 mm
-across and 5 mm high and rests on the upper knuckle. The pin and its head are round.
+across and 17 mm high and sits under the lower knuckle. The pin and its head are round. The head
+has a straight rim 1.5 mm high at its underside and at its top. Between them its side curves in
+over 14 mm, to 10.5 mm across at the middle, for a finger and a thumb.
 
 The base prints on its back. The knuckles stand up from the plate, round on top, and the
 screws' holes are upright. The bolt's hole, the hole for its head, the nut's pocket and the pin's hole lie
@@ -92,7 +94,8 @@ arm along its layers. Its knuckle and the neck to it hang 10 mm above the plate,
 between the front knuckles 7.3 mm. Both print on supports, which the plate turns on for this
 piece (`enable_support`).
 
-The pin prints upright, standing on its head, with its point up, and takes no supports. Its
+The pin prints upright, standing on its head, with its point up, and takes no supports. Above
+its waist the head's side leans out 28° from upright at most. Its
 layers lie across it, and the arm's pull shears them where the leg meets each front knuckle.
 
 ## Putting it together
@@ -105,9 +108,9 @@ layers lie across it, and the arm's pull shears them where the leg meets each fr
 4. Push the bolt down through the three knuckles and turn it into the nut with a 4 mm hex key.
 5. Tighten the bolt until the arm turns stiffly and stays where it is put.
 6. Swing the arm shut, round the corner and across the drawer's front.
-7. Drop the pin through the front knuckles, from above.
+7. Push the pin up through the front knuckles, from below.
 
-To open it, lift the pin out and swing the arm out.
+To open it, pull the pin out downward and swing the arm out.
 
 To take it off, undo the bolt, slide the arm out and take out the two screws.
 
