@@ -67,6 +67,9 @@ PIN_HEAD = 14  # the pin's head, across: as wide as a knuckle
 PIN_RIM = 1.5  # the straight rim at the head's underside and at its top, high
 PIN_GRIP = 14  # the head between its two rims, high: its side curves in there, for a finger and a thumb
 PIN_WAIST = 10.5  # the head at the middle of that curve, across
+EYE = 4  # the hole of each of the two eyes a wire ties the pin to the base through, across
+EYE_WALL = 2  # round that hole
+EYE_THICK = 3  # an eye, along its hole
 SHOWN = 15  # how far the pictures show the cupboard's side and the drawer's front past the clamp
 DRAWER_SHOWN = 18  # how thick the pictures show the drawer's front: it is not measured
 
@@ -90,6 +93,8 @@ WEB_LOW = FRONT_LUG + LUG_GAP  # the underside of the arm's leg between the fron
 WEB_HIGH = HEIGHT - FRONT_LUG - LUG_GAP  # the top of the arm's leg between the front knuckles, up
 PIN_HEAD_HIGH = 2 * PIN_RIM + PIN_GRIP  # the pin's head, down from the base's underside
 PIN_HOLE = PIN / 2 + PIN_ROOM  # the radius of the hole the pin slides through
+EYE_OUT = EYE / 2 + EYE_WALL  # the radius of an eye's round outside
+PIN_EYE = PIN_HEAD / 2 + EYE / 2 + EYE_WALL / 2  # the eye on the pin's head, from the pin's middle: its hole clears the head
 ARM_BACK = -CLEAR  # the back of the arm's leg across the front, which faces the side's front edge and the drawer's front
 HEAD_SINK = BOLT_HEAD_HIGH  # the hole for the bolt's head, down from the base's top: the head is level with the top
 NUT_SINK = NUT_HIGH  # the pocket for the nut, up from the base's underside: the nut is level with the underside, and so is the bolt's end
@@ -128,6 +133,16 @@ def base():
     for z in (0, HEIGHT - FRONT_LUG):
         whole += Pos(0, 0, z) * extrude(front, FRONT_LUG)
     whole -= bolt_hole() + pin_hole()
+    # The eye stands out behind the base's back end, against the cupboard's side and level with the underside, with
+    # its hole upright. Its outline is flat against the side, which is the face on the plate, and round at the
+    # corner away from it.
+    eye = (
+        Pos(-EYE_OUT, LENGTH + EYE_OUT) * Circle(EYE_OUT)
+        + Pos(-2 * EYE_OUT, LENGTH - JOIN) * Rectangle(2 * EYE_OUT, EYE_OUT + JOIN, align=CORNER)
+        + Pos(-EYE_OUT, LENGTH + EYE_OUT) * Rectangle(EYE_OUT, EYE_OUT, align=CORNER)
+        - Pos(-EYE_OUT, LENGTH + EYE_OUT) * Circle(EYE / 2)
+    )
+    whole += extrude(eye, EYE_THICK)
     whole -= Pos(BOLT_X, BOLT_Y, HEIGHT - HEAD_SINK) * Cylinder(HEAD_HOLE, HEAD_SINK + CUT, align=MIN)
     # The nut's pocket has a flat toward the plate and one away from it, so on the plate its top is a flat bridge.
     hexagon = Rot(0, 0, 30) * RegularPolygon(NUT_POCKET, 6, major_radius=False)
@@ -182,6 +197,10 @@ def pin():
         + Pos(0, 0, PIN_POINT) * Cylinder(PIN / 2, HEIGHT - PIN_POINT + JOIN, align=MIN)
         + Pos(0, 0, HEIGHT) * revolve(Face(outline), Axis.Z)
     )
+    # The eye lies at the head's end, which is the face on the plate, and points away from the cupboard's side.
+    eye = Pos(-PIN_EYE, 0) * Circle(EYE_OUT) + Pos(-PIN_EYE, -EYE_OUT) * Rectangle(PIN_EYE, 2 * EYE_OUT, align=CORNER)
+    eye -= Pos(-PIN_EYE, 0) * Circle(EYE / 2)
+    whole += Pos(0, 0, HEIGHT + PIN_HEAD_HIGH - EYE_THICK) * extrude(eye, EYE_THICK)
     return Pos(BOLT_X, PIN_Y, HEIGHT) * Rot(180, 0, 0) * whole
 
 

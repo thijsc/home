@@ -83,9 +83,16 @@ across and 17 mm high and sits under the lower knuckle. The pin and its head are
 has a straight rim 1.5 mm high at its underside and at its top. Between them its side curves in
 over 14 mm, to 10.5 mm across at the middle, for a finger and a thumb.
 
+A wire ties the pin to the base, through an eye on each. Each eye is 3 mm thick, with a 4 mm
+hole and 2 mm round it. The pin's eye lies at the end of its head, level with the head's
+underside, and stands 7 mm out from the head. The base's eye stands 8 mm out behind the base's
+back end, against the cupboard's side and level with the base's underside, with its hole
+upright. Its corner away from the side is round.
+
 The base prints on its back. The knuckles stand up from the plate, round on top, and the
 screws' holes are upright. The bolt's hole, the hole for its head, the nut's pocket and the pin's hole lie
-level. Their tops bridge 5 mm, 9.5 mm, 5 mm and 6.5 mm, the pocket's along one of its flats. The base
+level. Their tops bridge 5 mm, 9.5 mm, 5 mm and 6.5 mm, the pocket's along one of its flats. The
+eye lies on the plate behind the base's plate, with its hole level, 4 mm across. The base
 takes no supports. The knuckles' layers lie across them. The bolt bends each knuckle 0.05 mm at
 most before it rests on the arm's knuckle, and from there the bolt presses the three together.
 
@@ -94,7 +101,8 @@ arm along its layers. Its knuckle and the neck to it hang 10 mm above the plate,
 between the front knuckles 7.3 mm. Both print on supports, which the plate turns on for this
 piece (`enable_support`).
 
-The pin prints upright, standing on its head, with its point up, and takes no supports. Above
+The pin prints upright, standing on its head, with its point up, and takes no supports. Its eye
+lies on the plate, with its hole upright. Above
 its waist the head's side leans out 28° from upright at most. Its
 layers lie across it, and the arm's pull shears them where the leg meets each front knuckle.
 
@@ -109,6 +117,7 @@ layers lie across it, and the arm's pull shears them where the leg meets each fr
 5. Tighten the bolt until the arm turns stiffly and stays where it is put.
 6. Swing the arm shut, round the corner and across the drawer's front.
 7. Push the pin up through the front knuckles, from below.
+8. Tie a wire through the pin's eye and the base's eye, long enough for the pin to come out.
 
 To open it, pull the pin out downward and swing the arm out.
 
