@@ -1,7 +1,7 @@
 """bekant-net-holder: a holder for the IKEA Bekant's cable net, in place of IKEA's part 130884.
 
 A plug with barbs goes into a hole under the desk, and its flange holds a loop of the net. A pin goes into the plug
-from below and keeps its four prongs apart, so the barbs stay in the hole.
+from below and pushes its four prongs apart, so the barbs press into the hole's wall.
 
 Every size is a named constant below. Coordinates: x and y across, z up from the flange's rim, the plug's face that
 lies on the plate. Under the desk the whole thing hangs the other way up.
@@ -18,11 +18,8 @@ from build123d import Align, Axis, Box, Circle, Cone, Cylinder, Plane, Pos, Rect
 # run some other way.
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
 import plate  # noqa: E402
-from printers import chosen  # noqa: E402
 
 HERE = Path(__file__).parent
-# The fits the calibration piece showed for the printer and material the build is for (printers.toml).
-FITS = chosen().fits
 CUT = 1  # a cut runs this far past what it cuts through, so it leaves no skin
 MIN = (Align.CENTER, Align.CENTER, Align.MIN)
 
@@ -32,35 +29,41 @@ HEAD_THICK = 2.3  # the head, from its outer face to the face that lies in the r
 HEAD_EDGE = 0.3  # the head's side is straight this far up from its outer face, then slopes in
 HEAD_FLAT = 8.76  # the head's face in the recess, across its flat
 HEAD_ROUND = 1  # the radius the head's side rounds over with to that face
-PIN = 4.75  # the pin's shaft across
+THINNER = 0.2  # the shaft is this much thinner than the model's, which is too thick for the printed plug's hole
+PIN = 4.75 - THINNER  # the pin's shaft across
 PIN_ROOT = 0.75  # the radius the shaft rounds out with into the head
 PIN_LENGTH = 14.9  # the shaft, from the head to its end
 PIN_STRAIGHT = 11.3  # the shaft is PIN across this far from the head, then widens
-PIN_END = 4.98  # the shaft across at its widest, next to its end
+PIN_END = 4.98 - THINNER  # the shaft across at its widest, next to its end
 PIN_TIP = 0.5  # the radius the shaft's end rounds over with, so it finds the hole
 
-# The plug.
-DESK_HOLE = 9  # the hole under the desk across, the user's measurement on the Bekant
-SLIDE = 0.2  # the room around the collar in that hole, on each side: it slides in
-FLANGE = 18  # the flange across, where it lies against the desk
-RIM = 16  # the flange across at its rim, the edge away from the desk: its side slopes
-FLANGE_THICK = 2  # the flange, from its rim to the desk
-RECESS = 1  # the recess inside the rim, deep; the pin's head sits in it
-RECESS_FLOOR = 14  # that recess across at its floor: it widens to RIM at the rim
-COLLAR = DESK_HOLE - 2 * SLIDE  # the round shaft across, next to the flange
-COLLAR_HEIGHT = 3  # that shaft, up from the flange
-NECK = 8  # the shaft across between the collar and the first barb
-NECK_HEIGHT = 1  # that neck, up from the collar
-BARB = 10  # a barb across at its wide end, which faces the flange: wider than the desk's hole, so it catches
-BARB_ROOT = 7.6  # a barb across at its narrow end
-BARB_PITCH = 1.2  # a barb, up
+# The plug. Its shape is measured on a model of the holder, ikea130884 v2.stl, which is smaller than IKEA's part:
+# the model's flange is 18 mm across and its collar 9.5 mm, and the user measured 20 mm and 10.55 mm on a holder on
+# the desk. Both are 10/9, so every size of the model is made that much bigger.
+RING = 20  # IKEA's flange across, the user's measurement on a holder on the desk
+MODEL_FLANGE = 18  # the model's flange across
+SCALE = RING / MODEL_FLANGE
+SLIDE = 0.2  # the room between the hole's cut-away edge and the pin's root
+FLANGE = MODEL_FLANGE * SCALE  # the flange across, where it lies against the desk
+RIM = 16 * SCALE  # the flange across at its rim, the edge away from the desk: its side slopes
+FLANGE_THICK = 2 * SCALE  # the flange, from its rim to the desk
+RECESS = 1 * SCALE  # the recess inside the rim, deep; the pin's head sits in it
+RECESS_FLOOR = 14 * SCALE  # that recess across at its floor: it widens to RIM at the rim
+COLLAR = 9.5 * SCALE  # the round shaft across, next to the flange
+COLLAR_HEIGHT = 3 * SCALE  # that shaft, up from the flange
+NECK = 8.8 * SCALE  # the shaft across between the collar and the first barb
+NECK_HEIGHT = 1 * SCALE  # that neck, up from the collar
+BARB = 10 * SCALE  # a barb across at its wide end, which faces the flange
+BARB_ROOT = 7.6 * SCALE  # a barb across at its narrow end
+BARB_PITCH = 1.2 * SCALE  # a barb, up
 BARBS = 6
-TIP = 7.6  # the prongs across at their end
-TIP_HEIGHT = 1.5  # the last barb, which narrows to TIP
-HOLE = PIN + 2 * FITS.printed_grip  # the hole through the plug: the pin pushes into it and holds
-HOLE_END = PIN_END + 2 * FITS.printed_grip  # the hole across where the pin is widest
-HOLE_EDGE = PIN_ROOT + SLIDE  # the hole's edge in the recess is cut away this far, so it clears the pin's root
-SLOT = 1  # each of the two slots that split the shaft into four prongs, wide
+TIP = 7 * SCALE  # the prongs across at their end
+TIP_HEIGHT = 1.5 * SCALE  # the last barb, which narrows to TIP
+HOLE = 4 * SCALE  # the hole through the plug: narrower than the pin, which pushes the prongs apart
+HOLE_EDGE = (PIN - HOLE) / 2 + PIN_ROOT + SLIDE  # the hole's edge in the recess is cut away this far: it clears the
+# pin's root and leads the pin in
+SLOT = 1 * SCALE  # each of the two slots that split the shaft into four prongs, wide
+PIN_OUT = 2  # the pin is modelled out of the plug, its end this far under the rim: in the plug it spreads the prongs
 
 RECESS_SLOPE = (RIM - RECESS_FLOOR) / 2 / RECESS  # how much the recess widens for every mm toward the rim
 COLLAR_Z = FLANGE_THICK  # where the collar starts
@@ -68,12 +71,12 @@ NECK_Z = COLLAR_Z + COLLAR_HEIGHT  # where the neck starts, and the slots
 BARB_Z = NECK_Z + NECK_HEIGHT  # where the first barb starts
 TIP_Z = BARB_Z + BARBS * BARB_PITCH  # where the last barb starts
 TOP = TIP_Z + TIP_HEIGHT  # the prongs' end
-WIDENING = PIN_LENGTH - PIN_STRAIGHT - PIN_TIP  # the length the pin's shaft widens over, and the hole with it
+WIDENING = PIN_LENGTH - PIN_STRAIGHT - PIN_TIP  # the length the pin's shaft widens over
 WIDE_Z = RECESS + PIN_STRAIGHT  # where the pin's shaft starts to widen
 HEAD_Z = RECESS - HEAD_THICK  # the head's outer face, which is below the rim
 VIEWS = (
     *plate.ANGLE,
-    ("under.png", -30, -60, "From the side of the room: the pin's head in the flange's recess"),
+    ("under.png", -30, -60, "From the side of the room: the pin under the plug's hole"),
     ("side.png", 0, -90, "From the side: the barbs, and a slot between two prongs"),
 )
 
@@ -94,11 +97,7 @@ def plug():
     for i in range(BARBS):
         shaft += Pos(0, 0, BARB_Z + i * BARB_PITCH) * Cone(BARB / 2, BARB_ROOT / 2, BARB_PITCH, align=MIN)
     shaft += Pos(0, 0, TIP_Z) * Cone(BARB / 2, TIP / 2, TIP_HEIGHT, align=MIN)
-    # The hole follows the pin: straight, then wider. The prongs bend apart to let the pin's wide end through the
-    # straight length. The wide lengths run past the prongs' end when the pin does.
-    hole = Pos(0, 0, -CUT) * Cylinder(HOLE / 2, WIDE_Z + CUT, align=MIN)
-    hole += Pos(0, 0, WIDE_Z) * Cone(HOLE / 2, HOLE_END / 2, WIDENING, align=MIN)
-    hole += Pos(0, 0, WIDE_Z + WIDENING) * Cylinder(HOLE_END / 2, TOP + CUT, align=MIN)
+    hole = Pos(0, 0, -CUT) * Cylinder(HOLE / 2, TOP + 2 * CUT, align=MIN)
     hole += Pos(0, 0, RECESS) * Cone(HOLE / 2 + HOLE_EDGE, HOLE / 2, HOLE_EDGE, align=MIN)
     return flange + shaft - recess - hole - slot() - Rot(0, 0, 90) * slot()
 
@@ -137,9 +136,10 @@ def pin():
 
 def main():
     # The recess's floor hangs over the plate, so it prints on supports. They stand on the plate only: the barbs'
-    # flat faces are 1.2 mm ledges and print without.
+    # flat faces are 1.3 mm ledges and print without.
     supports = {"enable_support": "1", "support_on_build_plate_only": "1"}
-    plate.run(HERE, printed={"plug": plug(), "pin": pin()}, slicer={"plug": supports}, views=VIEWS)
+    out = Pos(0, 0, -(RECESS + PIN_LENGTH + PIN_OUT)) * pin()
+    plate.run(HERE, printed={"plug": plug(), "pin": out}, slicer={"plug": supports}, views=VIEWS)
 
 
 if __name__ == "__main__":
