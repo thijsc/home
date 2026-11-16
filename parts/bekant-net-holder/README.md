@@ -34,10 +34,12 @@ its round end. Where it meets the head it rounds out with a radius of 0.75 mm. T
 lengths are measured on a model of a pin, `Ikea Bekant Cable Holder Pin.stl`. The shaft is 0.2 mm
 thinner than the model's, which is too thick for the printed plug's hole.
 
-The hole through the plug is 4.4 mm, narrower than the pin. The pin pushes the prongs apart on its
-way in, by 0.1 mm across the barbs and 0.3 mm at its wide end, and they press into the hole's
-wall. The hole's edge in the recess is cut away at 45°, so it leads the pin in and clears the
-round at the pin's head.
+The hole through the flange and the collar is 5.2 mm: they do not give, and the pin's wide end
+slides through with 0.2 mm on either side. Where the slots start the hole narrows at 45° to
+4.4 mm, narrower than the pin. The pin pushes the prongs apart on its way in, by 0.1 mm across the
+barbs and 0.3 mm at its wide end, and they press into the hole's wall. The prongs grip the pin and
+hold it. The hole's edge in the recess is cut away at 45°, so it clears the round at the pin's
+head.
 
 The plug prints standing, since it is round. Its layers lie across the prongs, which bend in on
 their way into the desk. The recess's floor hangs 1.1 mm over the plate and prints

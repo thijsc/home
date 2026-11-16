@@ -43,7 +43,7 @@ PIN_TIP = 0.5  # the radius the shaft's end rounds over with, so it finds the ho
 RING = 20  # IKEA's flange across, the user's measurement on a holder on the desk
 MODEL_FLANGE = 18  # the model's flange across
 SCALE = RING / MODEL_FLANGE
-SLIDE = 0.2  # the room between the hole's cut-away edge and the pin's root
+SLIDE = 0.2  # the room round the pin where it slides, on each side
 FLANGE = MODEL_FLANGE * SCALE  # the flange across, where it lies against the desk
 RIM = 16 * SCALE  # the flange across at its rim, the edge away from the desk: its side slopes
 FLANGE_THICK = 2 * SCALE  # the flange, from its rim to the desk
@@ -59,9 +59,11 @@ BARB_PITCH = 1.2 * SCALE  # a barb, up
 BARBS = 6
 TIP = 7 * SCALE  # the prongs across at their end
 TIP_HEIGHT = 1.5 * SCALE  # the last barb, which narrows to TIP
-HOLE = 4 * SCALE  # the hole through the plug: narrower than the pin, which pushes the prongs apart
-HOLE_EDGE = (PIN - HOLE) / 2 + PIN_ROOT + SLIDE  # the hole's edge in the recess is cut away this far: it clears the
-# pin's root and leads the pin in
+HOLE = 4 * SCALE  # the hole through the prongs: narrower than the pin, which pushes the prongs apart
+ENTRY = PIN_END + 2 * SLIDE  # the hole through the flange and the collar, which do not give: the pin's wide end
+# slides through it
+HOLE_EDGE = (PIN - ENTRY) / 2 + PIN_ROOT + SLIDE  # the hole's edge in the recess is cut away this far, so it clears
+# the pin's root
 SLOT = 1 * SCALE  # each of the two slots that split the shaft into four prongs, wide
 PIN_OUT = 2  # the pin is modelled out of the plug, its end this far under the rim: in the plug it spreads the prongs
 
@@ -97,8 +99,12 @@ def plug():
     for i in range(BARBS):
         shaft += Pos(0, 0, BARB_Z + i * BARB_PITCH) * Cone(BARB / 2, BARB_ROOT / 2, BARB_PITCH, align=MIN)
     shaft += Pos(0, 0, TIP_Z) * Cone(BARB / 2, TIP / 2, TIP_HEIGHT, align=MIN)
+    # The hole is ENTRY across up to where the slots start, then narrows at 45° to HOLE between the prongs.
+    narrowing = (ENTRY - HOLE) / 2
     hole = Pos(0, 0, -CUT) * Cylinder(HOLE / 2, TOP + 2 * CUT, align=MIN)
-    hole += Pos(0, 0, RECESS) * Cone(HOLE / 2 + HOLE_EDGE, HOLE / 2, HOLE_EDGE, align=MIN)
+    hole += Pos(0, 0, -CUT) * Cylinder(ENTRY / 2, NECK_Z + CUT, align=MIN)
+    hole += Pos(0, 0, NECK_Z) * Cone(ENTRY / 2, HOLE / 2, narrowing, align=MIN)
+    hole += Pos(0, 0, RECESS) * Cone(ENTRY / 2 + HOLE_EDGE, ENTRY / 2, HOLE_EDGE, align=MIN)
     return flange + shaft - recess - hole - slot() - Rot(0, 0, 90) * slot()
 
 
