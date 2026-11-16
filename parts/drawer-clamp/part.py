@@ -5,6 +5,8 @@ the top and the bottom of its back, and an M5 bolt stands upright through both. 
 between the base's two. The arm is an angle: one leg lies along the side, over the base, and the other goes round
 the corner and across the drawer's front. It swings out sideways to let the drawer go. The bolt's head is sunk in the upper knuckle and its
 locknut in a pocket in the lower one, both level with the outside, and the bolt is tightened until the arm turns stiffly.
+At its front the base has two more knuckles, and the arm's leg runs between them. A printed pin drops through the
+three and locks the arm shut.
 
 Every size is a named constant below. Coordinates: x across from the outside of the cupboard's side, toward the
 drawer, y deep from the front of the side and the drawer, into the cupboard, z up from the base's underside.
@@ -34,12 +36,12 @@ CORNER = (Align.MIN, Align.MIN)  # a rectangle placed by its corner nearest the 
 BLOCK = (Align.MIN, Align.MIN, Align.MIN)
 
 SIDE = 50  # the cupboard's side, thick, the user's measurement
-REACH = 100  # the arm's end, across, from the outside of the cupboard's side, the user's choice
+REACH = 150  # the arm's end, across, from the outside of the cupboard's side, the user's choice
 LENGTH = 75  # the base, from the front of the side back
 LUG = 10  # each of the base's two knuckles, at its top and its bottom, up
 GRIP = 0.05  # between the arm's knuckle and each of the base's: less than a sliding fit, so the bolt closes the base's knuckles onto the arm's and the arm turns stiffly
 CLEAR = 0.5  # between the arm and what it lies along or turns past: the side, the drawer's front and the base
-PLATE = 6  # the base's plate against the cupboard's side, thick
+PIN_FROM = 12  # the pin and its head, from the cupboard's side, the user's choice: an overhang above the base stands 10 mm out from the side, the user's measurement, and the pin drops in past it
 KNUCKLE = 14  # a knuckle of the hinge, across
 BOLT = 5.0  # an M5 socket cap bolt's thread, ISO 4762
 BOLT_LENGTH = 30  # that bolt, under its head: 35 mm with its head, the user's measurement
@@ -55,11 +57,20 @@ SCREW_FROM = 10  # the first screw, from the base's front
 SCREW_APART = 40  # between the two screws, front to back
 END_ROUND = 4  # the radius of the two upright corners at the arm's end
 TIP = 1.2  # the least the leg is thick where it runs out round the base's knuckles: three lines of the nozzle
+FRONT_LUG = 7  # each of the base's two front knuckles, at its top and its bottom, up
+LUG_GAP = 0.3  # between the arm and each front knuckle, above and below: it slides
+SWING = 1.5  # behind the front knuckles, to the arm's leg: room for the leg's swing round the bolt
+PIN = 6  # the pin that locks the arm, across
+PIN_ROOM = 0.25  # a side, round the pin in its hole: it slides
+PIN_POINT = 2  # the pin's lower end, which narrows by PIN_POINT / 2 a side, so it finds the holes
+PIN_HEAD = 14  # the pin's head, across: as wide as a knuckle
+PIN_HEAD_HIGH = 5  # the pin's head, up from the base's top
 SHOWN = 15  # how far the pictures show the cupboard's side and the drawer's front past the clamp
 DRAWER_SHOWN = 18  # how thick the pictures show the drawer's front: it is not measured
 
 HEIGHT = BOLT_LENGTH + BOLT_HEAD_HIGH  # the base and the arm, up: the bolt with its head, so its head is level with the top and its end with the underside
 RADIUS = KNUCKLE / 2  # a knuckle's radius
+PLATE = PIN_FROM + PIN_HEAD / 2 - CLEAR - RADIUS  # the base's plate against the cupboard's side, thick: it puts the pin's head PIN_FROM from the side
 ARM = KNUCKLE  # the arm's two legs, thick: as thick as its knuckle is across, so the leg's two faces run on from the knuckle's
 BOLT_X = -(PLATE + CLEAR + RADIUS)  # the bolt, across: the arm's knuckle turns CLEAR from the base's plate
 BOLT_Y = LENGTH - RADIUS  # the bolt, deep: the knuckles end with the base's back
@@ -71,6 +82,12 @@ LEG_END = BOLT_Y - RADIUS - CLEAR  # where the arm's leg along the side ends at 
 # On the outside the leg goes on round the knuckles, hollow, CLEAR from their round side, up to where it is TIP thick.
 TIP_END = BOLT_Y - math.sqrt((RADIUS + CLEAR) ** 2 - (RADIUS - TIP) ** 2)
 ARM_IN = -PLATE - CLEAR  # the inside of the arm's leg along the side, which faces the base's plate
+ARM_OUT = ARM_IN - ARM  # the outside of that leg
+PIN_Y = RADIUS  # the pin, deep: the front knuckles end with the base's front. Across, it stands where the bolt does
+WEB_LOW = FRONT_LUG + LUG_GAP  # the underside of the arm's leg between the front knuckles, up
+WEB_HIGH = HEIGHT - FRONT_LUG - LUG_GAP  # the top of the arm's leg between the front knuckles, up
+PIN_HOLE = PIN / 2 + PIN_ROOM  # the radius of the hole the pin slides through
+PIN_FLAT = PIN / 2 / math.sqrt(2)  # the pin's flat, from its middle: its round sides rise from the flat at 45°
 ARM_BACK = -CLEAR  # the back of the arm's leg across the front, which faces the side's front edge and the drawer's front
 HEAD_SINK = BOLT_HEAD_HIGH  # the hole for the bolt's head, down from the base's top: the head is level with the top
 NUT_SINK = NUT_HIGH  # the pocket for the nut, up from the base's underside: the nut is level with the underside, and so is the bolt's end
@@ -83,7 +100,7 @@ SEAT_DEPTH = (SEAT - SHAFT) / math.tan(math.radians(HEAD_ANGLE / 2))  # the cone
 VIEWS = (
     ("angle.png", 30, -125, None),
     ("above.png", 90, -90, "From above: the arm closed, round the corner of the cupboard's side"),
-    ("side.png", 15, 170, "From the side: the arm's leg over the base, and the bolt's head sunk in the upper knuckle"),
+    ("side.png", 15, 170, "From the side: the pin through the front knuckles, and the bolt's head sunk in the upper knuckle at the back"),
     ("under.png", -40, 160, "From below: the locknut in its pocket in the lower knuckle"),
     ("back.png", 20, -160, "From behind: the base's knuckles above and below the arm's"),
 )
@@ -93,6 +110,10 @@ def bolt_hole():
     return Pos(BOLT_X, BOLT_Y, -CUT) * Cylinder(BOLT_HOLE, HEIGHT + 2 * CUT, align=MIN)
 
 
+def pin_hole():
+    return Pos(BOLT_X, PIN_Y, -CUT) * Cylinder(PIN_HOLE, HEIGHT + 2 * CUT, align=MIN)
+
+
 def base():
     """The plate against the cupboard's side, with a knuckle on it at the top and the bottom of its back. A knuckle
     is square where it stands on the plate and round on the outside, about the bolt."""
@@ -100,7 +121,11 @@ def base():
     knuckle = Pos(BOLT_X, BOLT_Y) * Circle(RADIUS) + Pos(BOLT_X, BOLT_Y - RADIUS) * Rectangle(-BOLT_X, KNUCKLE, align=CORNER)
     for z in (0, HEIGHT - LUG):
         whole += Pos(0, 0, z) * extrude(knuckle, LUG)
-    whole -= bolt_hole()
+    # The front knuckles have the same outline, about the pin.
+    front = Pos(BOLT_X, PIN_Y) * Circle(RADIUS) + Pos(BOLT_X, PIN_Y - RADIUS) * Rectangle(-BOLT_X, KNUCKLE, align=CORNER)
+    for z in (0, HEIGHT - FRONT_LUG):
+        whole += Pos(0, 0, z) * extrude(front, FRONT_LUG)
+    whole -= bolt_hole() + pin_hole()
     whole -= Pos(BOLT_X, BOLT_Y, HEIGHT - HEAD_SINK) * Cylinder(HEAD_HOLE, HEAD_SINK + CUT, align=MIN)
     # The nut's pocket has a flat toward the plate and one away from it, so on the plate its top is a flat bridge.
     hexagon = Rot(0, 0, 30) * RegularPolygon(NUT_POCKET, 6, major_radius=False)
@@ -132,7 +157,25 @@ def arm():
         square = Pos(REACH - END_ROUND / 2 + CUT / 2, y + toward * (END_ROUND - CUT) / 2) * Rectangle(END_ROUND + CUT, END_ROUND + CUT)
         legs -= square - Pos(REACH - END_ROUND, y + toward * END_ROUND) * Circle(END_ROUND)
     knuckle = Pos(BOLT_X, BOLT_Y) * Circle(RADIUS) + Pos(ARM_IN - ARM, LEG_END - JOIN) * Rectangle(ARM, BOLT_Y - LEG_END + JOIN, align=CORNER)
-    return extrude(legs, HEIGHT) + Pos(0, 0, ARM_LOW) * extrude(knuckle, ARM_HIGH - ARM_LOW) - bolt_hole()
+    whole = extrude(legs, HEIGHT) + Pos(0, 0, ARM_LOW) * extrude(knuckle, ARM_HIGH - ARM_LOW) - bolt_hole() - pin_hole()
+    # The base's front knuckles sit in a cut across the leg along the side, above and below. The cut runs from the
+    # back of the leg across the front to SWING behind the knuckles.
+    cut = Pos(ARM_OUT - CUT, ARM_BACK) * Rectangle(ARM + 2 * CUT, KNUCKLE + SWING - ARM_BACK, align=CORNER)
+    whole -= Pos(0, 0, -CUT) * extrude(cut, WEB_LOW + CUT)
+    return whole - Pos(0, 0, WEB_HIGH) * extrude(cut, HEIGHT - WEB_HIGH + CUT)
+
+
+def pin():
+    """The pin that locks the arm: a round rod through the base's front knuckles and the arm's leg between them, with
+    a point below and a round head that rests on the upper knuckle. One side is flat, rod and head, and it prints
+    lying on that."""
+    whole = (
+        Pos(BOLT_X, PIN_Y) * Cone(PIN / 2 - PIN_POINT / 2, PIN / 2, PIN_POINT, align=MIN)
+        + Pos(BOLT_X, PIN_Y, PIN_POINT) * Cylinder(PIN / 2, HEIGHT - PIN_POINT, align=MIN)
+        + Pos(BOLT_X, PIN_Y, HEIGHT) * Cylinder(PIN_HEAD / 2, PIN_HEAD_HIGH, align=MIN)
+    )
+    # The flat faces the cupboard's side.
+    return whole - Pos(BOLT_X + PIN_FLAT, PIN_Y - PIN_HEAD / 2 - CUT, -CUT) * Box(PIN_HEAD, PIN_HEAD + 2 * CUT, HEIGHT + PIN_HEAD_HIGH + 2 * CUT, align=BLOCK)
 
 
 def bolt():
@@ -160,12 +203,14 @@ def main():
     # round on top, and the screws' holes are upright. The knuckles' layers lie across them: the bolt bends each
     # one GRIP at most before it rests on the arm's knuckle.
     # The arm prints lying as it sits, so every layer is the whole angle, and the drawer's push bends it along the
-    # layers. Its knuckle and the neck to it hang LUG above the plate, so they print on supports.
+    # layers. Its knuckle and the neck to it hang LUG above the plate, so they print on supports, and so does the
+    # leg between the front knuckles.
+    # The pin prints lying on its flat, so its layers run along it and the arm's pull does not split them.
     plate.run(
         HERE,
-        printed={"base": base(), "arm": arm()},
+        printed={"base": base(), "arm": arm(), "pin": pin()},
         bought={"bolt": bolt(), "side": side(), "drawer": drawer()},
-        turn={"base": Rot(0, 90, 0)},
+        turn={"base": Rot(0, 90, 0), "pin": Rot(0, 90, 0)},
         slicer={"arm": {"enable_support": "1"}},
         views=VIEWS,
     )
