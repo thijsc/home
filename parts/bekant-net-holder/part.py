@@ -18,8 +18,11 @@ from build123d import Align, Axis, Box, Circle, Cone, Cylinder, Plane, Pos, Rect
 # run some other way.
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
 import plate  # noqa: E402
+from printers import chosen  # noqa: E402
 
 HERE = Path(__file__).parent
+# The fits the calibration piece showed for the printer and material the build is for (printers.toml).
+FITS = chosen().fits
 CUT = 1  # a cut runs this far past what it cuts through, so it leaves no skin
 MIN = (Align.CENTER, Align.CENTER, Align.MIN)
 
@@ -29,12 +32,11 @@ HEAD_THICK = 2.3  # the head, from its outer face to the face that lies in the r
 HEAD_EDGE = 0.3  # the head's side is straight this far up from its outer face, then slopes in
 HEAD_FLAT = 8.76  # the head's face in the recess, across its flat
 HEAD_ROUND = 1  # the radius the head's side rounds over with to that face
-THINNER = 0.2  # the shaft is this much thinner than the model's, which is too thick for the printed plug's hole
-PIN = 4.75 - THINNER  # the pin's shaft across
+PIN = 4.75  # the pin's shaft across
 PIN_ROOT = 0.75  # the radius the shaft rounds out with into the head
 PIN_LENGTH = 14.9  # the shaft, from the head to its end
 PIN_STRAIGHT = 11.3  # the shaft is PIN across this far from the head, then widens
-PIN_END = 4.98 - THINNER  # the shaft across at its widest, next to its end
+PIN_END = 4.98  # the shaft across at its widest, next to its end
 PIN_TIP = 0.5  # the radius the shaft's end rounds over with, so it finds the hole
 
 # The plug. Its shape is measured on a model of the holder, ikea130884 v2.stl, which is smaller than IKEA's part:
@@ -44,11 +46,12 @@ RING = 20  # IKEA's flange across, the user's measurement on a holder on the des
 MODEL_FLANGE = 18  # the model's flange across
 SCALE = RING / MODEL_FLANGE
 SLIDE = 0.2  # the room round the pin where it slides, on each side
-FLANGE = MODEL_FLANGE * SCALE  # the flange across, where it lies against the desk
-RIM = 16 * SCALE  # the flange across at its rim, the edge away from the desk: its side slopes
+SMALLER = 1  # the flange and its recess are this much smaller across than the scaled model's, the user's choice
+FLANGE = MODEL_FLANGE * SCALE - SMALLER  # the flange across, where it lies against the desk
+RIM = 16 * SCALE - SMALLER  # the flange across at its rim, the edge away from the desk: its side slopes
 FLANGE_THICK = 2 * SCALE  # the flange, from its rim to the desk
 RECESS = 1 * SCALE  # the recess inside the rim, deep; the pin's head sits in it
-RECESS_FLOOR = 14 * SCALE  # that recess across at its floor: it widens to RIM at the rim
+RECESS_FLOOR = 14 * SCALE - SMALLER  # that recess across at its floor: it widens to RIM at the rim
 COLLAR = 9.5 * SCALE  # the round shaft across, next to the flange
 COLLAR_HEIGHT = 3 * SCALE  # that shaft, up from the flange
 NECK = 8.8 * SCALE  # the shaft across between the collar and the first barb
@@ -59,9 +62,11 @@ BARB_PITCH = 1.2 * SCALE  # a barb, up
 BARBS = 6
 TIP = 7 * SCALE  # the prongs across at their end
 TIP_HEIGHT = 1.5 * SCALE  # the last barb, which narrows to TIP
-HOLE = 4 * SCALE  # the hole through the prongs: narrower than the pin, which pushes the prongs apart
-ENTRY = PIN_END + 2 * SLIDE  # the hole through the flange and the collar, which do not give: the pin's wide end
-# slides through it
+ENTRY = PIN_END + 2 * SLIDE  # the hole through the flange, the collar and the prongs' lower length: the pin's wide
+# end slides through it
+HOLE = PIN + 2 * FITS.printed_grip  # the hole at the prongs' end: the pin's shaft pushes into it and holds, and the
+# pin's wide end, which is wider, pushes the prongs apart
+GRIP = 5  # the length of that narrow hole, down from the prongs' end: the pin's wide end comes to rest in it
 HOLE_EDGE = (PIN - ENTRY) / 2 + PIN_ROOT + SLIDE  # the hole's edge in the recess is cut away this far, so it clears
 # the pin's root
 SLOT = 1 * SCALE  # each of the two slots that split the shaft into four prongs, wide
@@ -73,6 +78,7 @@ NECK_Z = COLLAR_Z + COLLAR_HEIGHT  # where the neck starts, and the slots
 BARB_Z = NECK_Z + NECK_HEIGHT  # where the first barb starts
 TIP_Z = BARB_Z + BARBS * BARB_PITCH  # where the last barb starts
 TOP = TIP_Z + TIP_HEIGHT  # the prongs' end
+GRIP_Z = TOP - GRIP  # where the hole narrows to HOLE
 WIDENING = PIN_LENGTH - PIN_STRAIGHT - PIN_TIP  # the length the pin's shaft widens over
 WIDE_Z = RECESS + PIN_STRAIGHT  # where the pin's shaft starts to widen
 HEAD_Z = RECESS - HEAD_THICK  # the head's outer face, which is below the rim
@@ -99,11 +105,12 @@ def plug():
     for i in range(BARBS):
         shaft += Pos(0, 0, BARB_Z + i * BARB_PITCH) * Cone(BARB / 2, BARB_ROOT / 2, BARB_PITCH, align=MIN)
     shaft += Pos(0, 0, TIP_Z) * Cone(BARB / 2, TIP / 2, TIP_HEIGHT, align=MIN)
-    # The hole is ENTRY across up to where the slots start, then narrows at 45° to HOLE between the prongs.
+    # The hole is ENTRY across up to GRIP_Z, then narrows at 45° to HOLE. The prongs are long enough there to bend
+    # apart for the pin's wide end.
     narrowing = (ENTRY - HOLE) / 2
     hole = Pos(0, 0, -CUT) * Cylinder(HOLE / 2, TOP + 2 * CUT, align=MIN)
-    hole += Pos(0, 0, -CUT) * Cylinder(ENTRY / 2, NECK_Z + CUT, align=MIN)
-    hole += Pos(0, 0, NECK_Z) * Cone(ENTRY / 2, HOLE / 2, narrowing, align=MIN)
+    hole += Pos(0, 0, -CUT) * Cylinder(ENTRY / 2, GRIP_Z + CUT, align=MIN)
+    hole += Pos(0, 0, GRIP_Z) * Cone(ENTRY / 2, HOLE / 2, narrowing, align=MIN)
     hole += Pos(0, 0, RECESS) * Cone(ENTRY / 2 + HOLE_EDGE, ENTRY / 2, HOLE_EDGE, align=MIN)
     return flange + shaft - recess - hole - slot() - Rot(0, 0, 90) * slot()
 
