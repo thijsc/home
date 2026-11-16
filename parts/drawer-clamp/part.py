@@ -87,7 +87,6 @@ PIN_Y = RADIUS  # the pin, deep: the front knuckles end with the base's front. A
 WEB_LOW = FRONT_LUG + LUG_GAP  # the underside of the arm's leg between the front knuckles, up
 WEB_HIGH = HEIGHT - FRONT_LUG - LUG_GAP  # the top of the arm's leg between the front knuckles, up
 PIN_HOLE = PIN / 2 + PIN_ROOM  # the radius of the hole the pin slides through
-PIN_FLAT = PIN / 2 / math.sqrt(2)  # the pin's flat, from its middle: its round sides rise from the flat at 45°
 ARM_BACK = -CLEAR  # the back of the arm's leg across the front, which faces the side's front edge and the drawer's front
 HEAD_SINK = BOLT_HEAD_HIGH  # the hole for the bolt's head, down from the base's top: the head is level with the top
 NUT_SINK = NUT_HIGH  # the pocket for the nut, up from the base's underside: the nut is level with the underside, and so is the bolt's end
@@ -167,15 +166,12 @@ def arm():
 
 def pin():
     """The pin that locks the arm: a round rod through the base's front knuckles and the arm's leg between them, with
-    a point below and a round head that rests on the upper knuckle. One side is flat, rod and head, and it prints
-    lying on that."""
-    whole = (
+    a point below and a round head that rests on the upper knuckle."""
+    return (
         Pos(BOLT_X, PIN_Y) * Cone(PIN / 2 - PIN_POINT / 2, PIN / 2, PIN_POINT, align=MIN)
         + Pos(BOLT_X, PIN_Y, PIN_POINT) * Cylinder(PIN / 2, HEIGHT - PIN_POINT, align=MIN)
         + Pos(BOLT_X, PIN_Y, HEIGHT) * Cylinder(PIN_HEAD / 2, PIN_HEAD_HIGH, align=MIN)
     )
-    # The flat faces the cupboard's side.
-    return whole - Pos(BOLT_X + PIN_FLAT, PIN_Y - PIN_HEAD / 2 - CUT, -CUT) * Box(PIN_HEAD, PIN_HEAD + 2 * CUT, HEIGHT + PIN_HEAD_HIGH + 2 * CUT, align=BLOCK)
 
 
 def bolt():
@@ -205,12 +201,13 @@ def main():
     # The arm prints lying as it sits, so every layer is the whole angle, and the drawer's push bends it along the
     # layers. Its knuckle and the neck to it hang LUG above the plate, so they print on supports, and so does the
     # leg between the front knuckles.
-    # The pin prints lying on its flat, so its layers run along it and the arm's pull does not split them.
+    # The pin prints upright, standing on its head, so it is round all the way. Its layers lie across it, and the
+    # arm's pull shears them where the leg meets each front knuckle.
     plate.run(
         HERE,
         printed={"base": base(), "arm": arm(), "pin": pin()},
         bought={"bolt": bolt(), "side": side(), "drawer": drawer()},
-        turn={"base": Rot(0, 90, 0), "pin": Rot(0, 90, 0)},
+        turn={"base": Rot(0, 90, 0), "pin": Rot(180, 0, 0)},
         slicer={"arm": {"enable_support": "1"}},
         views=VIEWS,
     )

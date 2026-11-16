@@ -25,7 +25,7 @@ the arm shut. With the pin lifted out the arm swings out sideways, and the drawe
 | --- | --- | --- | --- |
 | `base` | 1 | On its back, the face that lies against the cupboard | None |
 | `arm` | 1 | Lying as it sits | Under its knuckle and under its leg between the front knuckles |
-| `pin` | 1 | Lying on its flat | None |
+| `pin` | 1 | Upright, standing on its head | None |
 
 | Bought | Count | Source |
 | --- | --- | --- |
@@ -79,8 +79,7 @@ screw at the front lies between the two knuckles and is reached between them.
 
 The pin is 6 mm across and 35 mm long, with a point 2 mm long at its lower end. Its hole in the
 knuckles and the leg is the pin with 0.25 mm on either side: it slides. Its head is 14 mm
-across and 5 mm high and rests on the upper knuckle. One side of the pin and its head is flat,
-2.1 mm from the middle.
+across and 5 mm high and rests on the upper knuckle. The pin and its head are round.
 
 The base prints on its back. The knuckles stand up from the plate, round on top, and the
 screws' holes are upright. The bolt's hole, the hole for its head, the nut's pocket and the pin's hole lie
@@ -93,8 +92,8 @@ arm along its layers. Its knuckle and the neck to it hang 10 mm above the plate,
 between the front knuckles 7.3 mm. Both print on supports, which the plate turns on for this
 piece (`enable_support`).
 
-The pin prints lying on its flat. Its layers run along it, so the arm's pull does not split
-them. Its round sides rise from the flat at 45°, and it takes no supports.
+The pin prints upright, standing on its head, with its point up, and takes no supports. Its
+layers lie across it, and the arm's pull shears them where the leg meets each front knuckle.
 
 ## Putting it together
 
